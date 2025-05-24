@@ -1,0 +1,89 @@
+CC = $(CXX)
+CXXFLAGS = -std=c++17
+CXXFLAGS += -pedantic -Wall -Wextra -Werror
+CXXFLAGS += -g
+
+.PHONY: all clean
+
+all: testVecteur testIntegrateur1 testPointMateriel
+
+testVecteur.o: Vecteur.h testVecteur.cc
+	$(CXX) $(CXXFLAGS) -c testVecteur.cc
+
+TextViewer.o: ChargeElectrique.h PointMateriel.h SupportADessin.h Systeme.h TextViewer.cc TextViewer.h
+	$(CXX) $(CXXFLAGS) -c TextViewer.cc
+
+ChampElectromagnetique.o: ChampElectromagnetique.cc ChampElectromagnetique.h ChampForces.h ChargeElectrique.h ObjetPhysique.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c ChampElectromagnetique.cc
+
+ChampNewtonien.o: ChampNewtonien.cc ChampNewtonien.h ForceCentrale.h ObjetPhysique.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c ChampNewtonien.cc
+
+exerciceP9-pomme.o: ChampNewtonien.h IntegrateurEulerCromer.h Libre.h PointMateriel.h Systeme.h TextViewer.h exerciceP9-pomme.cc
+	$(CXX) $(CXXFLAGS) -c exerciceP9-pomme.cc
+
+ObjetMobile.o: ObjetMobile.cc ObjetMobile.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c ObjetMobile.cc
+
+ForceCentrale.o: ChampForces.h ForceCentrale.cc ForceCentrale.h ObjetPhysique.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c ForceCentrale.cc
+
+testIntegrateur1.o: GravitationConstante.h IntegrateurEulerCromer.h Libre.h PointMateriel.h testIntegrateur1.cc
+	$(CXX) $(CXXFLAGS) -c testIntegrateur1.cc
+
+FrottementFluide.o: ChampForces.h FrottementFluide.cc FrottementFluide.h ObjetPhysique.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c FrottementFluide.cc
+
+IntegrateurRungeKutta4.o: Integrateur.h IntegrateurRungeKutta4.cc IntegrateurRungeKutta4.h ObjetMobile.h
+	$(CXX) $(CXXFLAGS) -c IntegrateurRungeKutta4.cc
+
+testPointMateriel.o: GravitationConstante.h Libre.h PointMateriel.h Vecteur.h testPointMateriel.cc
+	$(CXX) $(CXXFLAGS) -c testPointMateriel.cc
+
+ObjetPhysique.o: ChampForces.h Contrainte.h ObjetMobile.h ObjetPhysique.cc ObjetPhysique.h
+	$(CXX) $(CXXFLAGS) -c ObjetPhysique.cc
+
+GravitationConstante.o: ChampForces.h GravitationConstante.cc GravitationConstante.h ObjetPhysique.h Vecteur.h constantes.h
+	$(CXX) $(CXXFLAGS) -c GravitationConstante.cc
+
+ChargeElectrique.o: ChampForces.h ChargeElectrique.cc ChargeElectrique.h Contrainte.h PointMateriel.h SupportADessin.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c ChargeElectrique.cc
+
+PointMateriel.o: ChampForces.h Contrainte.h Dessinable.h ObjetPhysique.h PointMateriel.cc PointMateriel.h SupportADessin.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c PointMateriel.cc
+
+exerciceP11-magnetique.o: ChampCompose.h ChampElectromagnetique.h ChargeElectrique.h FrottementFluide.h IntegrateurEulerCromer.h Libre.h Systeme.h TextViewer.h exerciceP11-magnetique.cc
+	$(CXX) $(CXXFLAGS) -c exerciceP11-magnetique.cc
+
+Libre.o: Contrainte.h Libre.cc Libre.h ObjetPhysique.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c Libre.cc
+
+ChampCompose.o: ChampCompose.cc ChampCompose.h ChampForces.h ObjetPhysique.h
+	$(CXX) $(CXXFLAGS) -c ChampCompose.cc
+
+Systeme.o: ChampForces.h ChampNewtonien.h ChargeElectrique.h Contrainte.h Dessinable.h GravitationConstante.h Integrateur.h IntegrateurEulerCromer.h Libre.h ObjetPhysique.h PointMateriel.h SupportADessin.h Systeme.cc Systeme.h
+	$(CXX) $(CXXFLAGS) -c Systeme.cc
+
+Vecteur.o: Vecteur.cc Vecteur.h
+	$(CXX) $(CXXFLAGS) -c Vecteur.cc
+
+testPomme.o: ChampNewtonien.h IntegrateurEulerCromer.h Libre.h PointMateriel.h testPomme.cc
+	$(CXX) $(CXXFLAGS) -c testPomme.cc
+
+IntegrateurEulerCromer.o: Integrateur.h IntegrateurEulerCromer.cc IntegrateurEulerCromer.h ObjetMobile.h Vecteur.h
+	$(CXX) $(CXXFLAGS) -c IntegrateurEulerCromer.cc
+
+testSysteme.o: ChampNewtonien.h IntegrateurEulerCromer.h Libre.h PointMateriel.h Systeme.h testSysteme.cc
+	$(CXX) $(CXXFLAGS) -c testSysteme.cc
+
+testVecteur: testVecteur.o Vecteur.o
+	$(CXX) -o testVecteur testVecteur.o Vecteur.o
+
+testIntegrateur1: testIntegrateur1.o PointMateriel.o Vecteur.o ObjetMobile.o ObjetPhysique.o GravitationConstante.o IntegrateurEulerCromer.o Libre.o
+	$(CXX) -o testIntegrateur1 testIntegrateur1.o PointMateriel.o Vecteur.o ObjetMobile.o ObjetPhysique.o GravitationConstante.o IntegrateurEulerCromer.o Libre.o
+
+testPointMateriel: testPointMateriel.o PointMateriel.o Libre.o Vecteur.o ObjetMobile.o ObjetPhysique.o GravitationConstante.o IntegrateurEulerCromer.o TextViewer.o Systeme.o ChargeElectrique.o ChampNewtonien.o ForceCentrale.o
+	$(CXX) -o testPointMateriel testPointMateriel.o PointMateriel.o Libre.o Vecteur.o ObjetMobile.o ObjetPhysique.o GravitationConstante.o IntegrateurEulerCromer.o TextViewer.o Systeme.o ChargeElectrique.o ChampNewtonien.o ForceCentrale.o
+
+clean:
+	rm -f *.o testVecteur testIntegrateur1 testPointMateriel
