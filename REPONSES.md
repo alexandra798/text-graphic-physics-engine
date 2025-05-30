@@ -1,249 +1,197 @@
 
-### [Question P1.1]Comment représentez-vous ces vecteurs ? Comment sont-ils organisés : quels attributs ? quelles méthodes ? quels droits d'accès ?
-Pour représenter un vecteur de dimension quelconque, je propose:
 
-Attributs (privés):
+## [Question P1.1] Comment représentez-vous ces vecteurs ? Comment sont-ils organisés : quels attributs ? quelles méthodes ? quels droits d'accès ?
 
-Un tableau dynamique (comme std::vector<double>) pour stocker les composantes du vecteur
-Une variable entière pour suivre la dimension du vecteur
+**Attributs (privés) :**
 
+- `std::vector<double> coords` : Conteneur dynamique stockant les coordonnées du vecteur
+- Cet attribut est **privé** pour assurer l'encapsulation et protéger l'intégrité des données
 
-Méthodes (publiques):
+**Méthodes publiques :**
 
-Méthodes d'opérations de base: augmente(), set_coord(), affiche(), compare()
-Opérations arithmétiques vectorielles: addition(), oppose(), mult(), prod_scal(), prod_vect()
-Méthodes liées à la normalisation: norme(), norme2(), unitaire()
+- **Constructeurs** : par défaut, avec dimension, avec coordonnées 3D, avec liste d'initialisation
+- **Opérateurs arithmétiques** : `+`, `-`, `*` (scalaire et produit scalaire), `^` (produit vectoriel)
+- **Opérateurs de comparaison** : `==`, `!=`
+- **Accès aux éléments** : `operator[]`, `at()` avec vérification des bornes
+- **Propriétés** : `norme()`, `norme2()`, `memeDimension()`
+- **Utilitaires** : `augmente()`, `set_coord()`
 
+Cette organisation respecte le principe d'encapsulation en cachant l'implémentation interne tout en offrant une interface riche et intuitive.
 
-Droits d'accès:
+## [Question P1.2] Quel choix avez vous fait pour les opérations entre vecteurs de dimensions différentes ?
 
-Tous les membres de données devraient être privés pour assurer l'encapsulation et la sécurité
-Toutes les méthodes d'opération devraient être publiques pour permettre l'utilisation externe
+J'ai choisi l'approche **restrictive** : les opérations entre vecteurs de dimensions différentes lèvent une exception `std::runtime_error`.
 
+**Justification :**
 
+- **Sécurité mathématique** : Évite les opérations mal définies
+- **Clarté du code** : Force l'utilisateur à être explicite sur ses intentions
+- **Détection précoce d'erreurs** : Les erreurs de dimension sont détectées immédiatement
+- **Cohérence** : Comportement uniforme pour toutes les opérations
 
-Les avantages de cette conception sont:
+## [Question P4.1] Avez-vous ajouté un constructeur de copie ? Pourquoi ?
 
-L'utilisation d'un tableau dynamique permet de représenter des vecteurs de dimension quelconque de manière flexible
-La déclaration des membres de données comme privés garantit la sécurité et la cohérence des données
-Fournir un ensemble complet de méthodes publiques rend les opérations sur les vecteurs simples et intuitives
+**Non, je n'ai pas ajouté de constructeur de copie explicite** car j'utilise `= default`.
 
-### [Question P1.2]Quel choix avez vous fait pour les opérations entre vecteurs de dimensions différentes ?
-Je choisis l'approche "déterminée par la plus petite dimension" (c'est-à-dire la projection). Voici mes raisons:
+**Justification :**
 
-Sécurité: Cette méthode garantit que toutes les opérations sont bien définies, sans référence à des composantes non définies
-Cohérence mathématique: Dans de nombreuses applications pratiques, lorsque les dimensions diffèrent, on projette généralement un vecteur de l'espace de plus grande dimension vers celui de plus petite dimension
-Simplicité d'implémentation: L'implémentation du code est relativement simple, il suffit de parcourir jusqu'à la plus petite dimension
-Prévention de perte d'information inattendue: Bien que certaines informations du vecteur de plus grande dimension soient perdues, c'est un choix conscient plutôt qu'un comportement accidentel dû à un dépassement
+- `std::vector<double>` gère déjà correctement la copie profonde
+- Le constructeur de copie par défaut généré par le compilateur est suffisant
+- Cela respecte la **règle de zéro** : si aucune gestion manuelle de ressources n'est nécessaire, utiliser les versions par défaut
+- Plus maintenable et moins sujet aux erreurs
 
-Ce choix signifie que, par exemple, dans une opération v1.addition(v2), si v1 est un vecteur à deux dimensions et v2 est un vecteur à trois dimensions, le résultat sera un vecteur à deux dimensions, utilisant uniquement les deux premières composantes de v2 pour le calcul.
+## [Question P4.2] Constructeur par coordonnées sphériques
 
+**a) Implications au niveau des attributs :** Aucune modification des attributs ne serait nécessaire. Le constructeur convertirait simplement les coordonnées sphériques $(r, \theta, \phi)$ en coordonnées cartésiennes selon : $$x = r \sin\theta \cos\phi$$ $$y = r \sin\theta \sin\phi$$
+ $$z = r \cos\theta$$
 
+**b) Difficulté majeure en C++ :** **Ambiguïté de surcharge** : impossible de distinguer entre :
 
-### [Question P4.1]Avez-vous ajouté un constructeur de copie ? Pourquoi (justifiez votre choix) ?
+- `Vecteur(double r, double theta, double phi)` // sphériques
+- `Vecteur(double x, double y, double z)` // cartésiennes
 
-Oui, j'ajouterais un constructeur de copie pour la classe Vecteur. Voici mes raisons:
+Les deux signatures sont identiques pour le compilateur (trois `double`), rendant la résolution impossible.
 
-1. La classe Vecteur contient un membre qui est un tableau dynamique (std::vector<double>), ce qui signifie qu'une copie superficielle (bit à bit) pourrait ne pas être suffisante.
-2. Bien que C++ fournisse un constructeur de copie par défaut qui fonctionnerait correctement avec std::vector (qui gère déjà la copie profonde), il est préférable d'être explicite pour garantir le comportement attendu.
-3. Dans le cas où nous déciderions plus tard de modifier la structure interne de la classe, avoir déjà défini un constructeur de copie explicite facilitera les futures modifications.
-4. Cela permet également de clarifier les intentions du code et d'assurer que la copie d'un vecteur crée bien un nouvel objet indépendant avec ses propres données.
+## [Question P4.3] Quels opérateurs avez vous introduits ?
 
-### Question P4.2
-a) Si l'on souhaitait ajouter un constructeur par coordonnées sphériques (deux angles et une longueur) pour les vecteurs de dimension 3, que cela impliquerait-il au niveau des attributs de la classe ?
+**Opérateurs arithmétiques :**
 
-L'ajout d'un constructeur par coordonnées sphériques n'impliquerait pas nécessairement de modifications des attributs de la classe Vecteur. Les attributs actuels (un tableau pour les composantes et éventuellement une variable pour la dimension) suffisent, car:
-- Le constructeur convertirait simplement les coordonnées sphériques (r, θ, φ) en coordonnées cartésiennes (x, y, z) selon les formules trigonométriques classiques.
-- Les composantes cartésiennes calculées seraient ensuite stockées dans le tableau existant.
+- `operator+`, `operator+=` (addition)
+- `operator-`, `operator-=` (soustraction)
+- `operator-` unaire (opposé)
+- `operator*`, `operator*=` (multiplication scalaire)
+- `operator*` (produit scalaire)
+- `operator^`, `operator^=` (produit vectoriel)
+- `operator~` (vecteur unitaire)
 
-b) Quelle serait la difficulté majeure (voire l'impossibilité) de sa réalisation en C++ ?
+**Opérateurs de comparaison :**
 
-La difficulté majeure en C++ serait l'ambiguïté de la surcharge du constructeur. En effet:
-- Un constructeur par coordonnées sphériques prendrait trois paramètres double (rayon, angle θ, angle φ)
-- Le constructeur par coordonnées cartésiennes prend déjà trois paramètres double (x, y, z)
-- Ces deux signatures sont identiques du point de vue du compilateur (trois double)
+- `operator==`, `operator!=`
 
-Il serait donc impossible pour le compilateur de déterminer quel constructeur appeler lorsqu'on écrit `Vecteur(1.0, 0.5, 2.0)`. Cette ambiguïté n'est pas résolvable en C++ standard sans recourir à des techniques comme:
-- Utiliser des types différents pour les angles
-- Utiliser des structures intermédiaires distinctes
-- Utiliser des méthodes de fabrication statiques plutôt que des constructeurs
+**Opérateurs d'accès :**
 
-### Question P4.3
-Quels opérateurs avez vous introduits ?
+- `operator[]` (accès direct)
 
-J'aurais introduit les opérateurs suivants:
+**Opérateur d'affichage :**
 
-1. `operator<<` (remplaçant affiche()) pour l'affichage
-2. `operator==` et `operator!=` (remplaçant compare()) pour les comparaisons
-3. `operator+` et `operator+=` (remplaçant addition())
-4. `operator-` et `operator-=` (remplaçant soustraction())
-5. `operator-` (unaire, remplaçant oppose())
-6. `operator*` et `operator*=` (pour la multiplication par un scalaire, remplaçant mult())
-7. `operator*` (entre deux vecteurs, remplaçant prod_scal())
-8. `operator^` et `operator^=` (remplaçant prod_vect())
-9. `operator~` (unaire, remplaçant unitaire())
+- `operator<<` (fonction amie)
 
-Ces opérateurs faciliteraient considérablement l'utilisation de la classe Vecteur en permettant une syntaxe plus naturelle et plus proche des notations mathématiques conventionnelles.
+## [Question P6.1] Comment avez vous conçu votre classe `Integrateur` ?
 
+**Conception :**
 
+- **Classe abstraite** avec méthode virtuelle pure `integre()`
+- **Pas d'attributs** : un intégrateur est un algorithme stateless
+- **Interface minimale** : une seule méthode `integre(ObjetMobile& objet, double t, double dt)`
+- **Destructeur virtuel** pour assurer la destruction correcte via polymorphisme
 
-### [Question P6.1] Comment avez vous conçu votre classe `Integrateur` ? Expliquez votre conception (attributs, interface, ...).
+**Justification :** Cette conception implémente le **patron Stratégie**, permettant de changer d'algorithme d'intégration à l'exécution tout en respectant le principe ouvert/fermé.
 
-J'ai conçu la classe `Integrateur` comme une classe abstraite de base qui fournit une interface commune pour implémenter différents algorithmes d'intégration numérique. Les caractéristiques principales sont :
+## [Question P6.2] Relation entre `Integrateur` et `IntegrateurEulerCromer`
 
-1. **Attributs** : La classe de base n'a pas d'attributs, car un intégrateur n'a pas besoin de maintenir un état interne. Il s'agit simplement d'une implémentation d'algorithme.
+**Relation d'héritage** : `IntegrateurEulerCromer` hérite de `Integrateur`
 
-2. **Interface** :
-   - Un destructeur virtuel pour assurer une destruction correcte des objets des classes dérivées via des pointeurs de la classe de base
-   - Une méthode virtuelle pure `integre(ObjetMobile& objet, double t, double dt)` qui est la méthode principale que toutes les classes d'intégrateurs doivent implémenter
-   
-3. **Philosophie de conception** :
-   - Utilisation du **patron de conception Stratégie**, permettant de changer d'algorithme d'intégration à l'exécution
-   - Respect du **principe ouvert/fermé**, facilitant l'ajout de nouveaux intégrateurs sans modifier le code existant
-   - Fourniture d'une interface unifiée permettant au reste du système d'interagir avec n'importe quel intégrateur sans connaître les détails spécifiques de l'algorithme
+- `Integrateur` définit l'interface abstraite
+- `IntegrateurEulerCromer` implémente l'algorithme spécifique
+- Permet le **polymorphisme** : utilisation via pointeurs/références `Integrateur*`
+- Facilite l'**extensibilité** : ajout de nouveaux intégrateurs sans modifier le code existant
 
-### [Question P6.2] Quelle est la relation entre les classes `Integrateur` et `IntegrateurEulerCromer` ?
+## [Question P7.1] Comment avez vous traduit le fait que `GravitationConstante` est un champ de force ?
 
-La relation entre `Integrateur` et `IntegrateurEulerCromer` est une relation d'**héritage** :
+`GravitationConstante` **hérite de `ChampForces`** et implémente la méthode virtuelle pure `force()`.
 
-1. `Integrateur` est une classe abstraite de base qui définit l'interface pour tous les intégrateurs
-2. `IntegrateurEulerCromer` est une classe concrète dérivée de `Integrateur` qui implémente l'algorithme d'intégration d'Euler-Cromer
+**Implémentation :**
 
-Cette relation illustre le concept de **polymorphisme** en programmation orientée objet :
-- Le système peut manipuler n'importe quel type d'intégrateur via des pointeurs ou des références de type `Integrateur*`
-- À l'exécution, le système peut choisir dynamiquement quel algorithme d'intégration utiliser
-- De nouveaux intégrateurs peuvent être ajoutés au système en créant de nouvelles sous-classes de `Integrateur`, sans avoir à modifier le code qui utilise les intégrateurs
-
-Cette conception permet une grande flexibilité dans le choix des algorithmes d'intégration selon les besoins, par exemple en utilisant la méthode d'Euler simple mais rapide lorsque la précision n'est pas cruciale, ou en passant à l'algorithme de Runge-Kutta lorsqu'une plus grande précision est nécessaire.
-
-
-
-## [Question P8.1] 
-
-La méthode `dessine_sur()` est, du point de vue de la programmation orientée objet, une méthode virtuelle pure. Elle est déclarée dans la classe abstraite `Dessinable` et doit être implémentée par toutes les classes dérivées. 
-
-Cette méthode est un exemple parfait du principe de polymorphisme, permettant à différents objets d'être "dessinés" de manière spécifique tout en partageant une interface commune. C'est une application du patron de conception "Visiteur" (Visitor pattern), où la méthode `dessine_sur()` accepte un visiteur (`SupportADessin`) qui applique une opération appropriée selon le type concret de l'objet.
-
-Le fait que cette méthode doive être implémentée de manière identique dans toutes les classes dérivées, avec un appel à `support.dessine(*this)`, est une solution technique pour contourner l'absence de "double dispatch" natif en C++.
-
-## [Question P8.2] 
-
-Pour les classes contenant des pointeurs, il faut faire attention aux aspects suivants :
-
-1. **La gestion de mémoire** : Les pointeurs bruts ne gèrent pas automatiquement la mémoire, ce qui peut entraîner des fuites de mémoire ou des pointeurs pendants.
-
-2. **La propriété des ressources** : Il faut clairement définir qui est responsable de la création et de la destruction des objets pointés.
-
-3. **La règle des trois/cinq** : Si une classe nécessite un destructeur personnalisé, un constructeur de copie ou un opérateur d'affectation, elle a généralement besoin des trois. Avec C++11, cette règle s'étend à cinq avec les sémantiques de déplacement.
-
-Les solutions possibles sont :
-
-1. **Utiliser des pointeurs intelligents** :
-   - `std::shared_ptr` pour la propriété partagée
-   - `std::unique_ptr` pour la propriété exclusive
-   - `std::weak_ptr` pour éviter les références circulaires
-
-2. **Copie profonde** : Implémenter des constructeurs de copie et des opérateurs d'affectation qui créent de nouvelles copies des ressources.
-
-3. **Sémantique de déplacement** : Utiliser des constructeurs de déplacement et des opérateurs d'affectation par déplacement pour améliorer l'efficacité.
-
-4. **Suivre le principe RAII** (Resource Acquisition Is Initialization) : S'assurer que les ressources sont acquises dans le constructeur et libérées dans le destructeur.
-
-Dans notre système de simulation physique, l'utilisation de `std::shared_ptr` est particulièrement appropriée car plusieurs objets peuvent partager des références à des contraintes ou des champs de force communs.
-
-## [Question P8.3] 
-
-La classe `Systeme` est conçue pour représenter l'ensemble du système physique à simuler. Voici mon explication de sa conception :
-
-**Attributs** :
-- `std::vector<std::shared_ptr<ObjetPhysique>> objets` : Collection des objets physiques du système
-- `std::vector<std::shared_ptr<ChampForces>> champs` : Collection des champs de forces
-- `std::vector<std::shared_ptr<Contrainte>> contraintes` : Collection des contraintes
-- `std::shared_ptr<Integrateur> integrateur` : L'intégrateur utilisé pour faire évoluer le système
-- `double temps` : Le temps actuel du système
-
-**Interface** :
-1. **Constructeurs** :
-   - Constructeur par défaut initialisant un système vide avec un intégrateur d'Euler-Cromer
-   - Constructeur avec un intégrateur spécifié
-
-2. **Méthodes d'ajout de composants** :
-   - `ajoute_objet()` : Ajoute un objet physique au système
-   - `ajoute_contrainte()` : Ajoute une contrainte au système
-   - `ajoute_champ()` : Ajoute un champ de forces au système
-
-3. **Méthodes d'application** :
-   - `applique_contrainte()` : Applique une contrainte spécifique à un objet spécifique
-   - `applique_champ()` : Applique un champ de forces spécifique à un objet spécifique
-
-4. **Méthode d'évolution** :
-   - `evolue(double dt)` : Fait évoluer le système d'un pas de temps dt
-
-5. **Accesseurs** :
-   - Méthodes pour obtenir les objets, champs, contraintes et le temps du système
-
-6. **Méthode d'affichage** :
-   - `dessine_sur()` : Héritée de `Dessinable`, permet d'afficher le système
-   - Surcharge de l'opérateur `<<` pour afficher toutes les informations du système
-
-**Choix de conception** :
-- J'ai choisi d'utiliser des `std::shared_ptr` pour gérer les objets, contraintes et champs de forces, ce qui permet un partage sécurisé des ressources.
-- La responsabilité du temps est confiée à la classe `Systeme`, qui incrémente son propre temps lors de chaque évolution.
-- La séparation claire entre la simulation physique (via `evolue()`) et l'affichage (via `dessine_sur()`) permet de respecter le principe de séparation des préoccupations.
-- L'intégrateur est un composant interne du système, ce qui permet d'utiliser différentes méthodes d'intégration sans modifier le reste du code.
-
-Cette conception modulaire permet une grande flexibilité et extensibilité du système, tout en maintenant une interface cohérente et facile à utiliser.
-
-## [Question P12.1] Où cela s'intègre-t-il dans votre projet/conception ? Quels changements cela engendre-t-il (ou pas) ?
-
-
-
-1. **Intégration dans l'architecture existante** :
-   - La classe `IntegrateurRungeKutta4` hérite de la classe abstraite `Integrateur`
-   - Elle implémente la méthode virtuelle pure `integre()` avec l'algorithme RK4
-   - Elle utilise la même interface que les autres intégrateurs (comme `IntegrateurEulerCromer`)
-   - Le système (`Systeme`) peut utiliser n'importe quel intégrateur de manière polymorphique
-
-2. **Caractéristiques spécifiques de RK4** :
-   - Utilise 4 évaluations de la fonction d'évolution par pas de temps
-   - Calcule des coefficients intermédiaires (k1, k2, k3, k4) pour améliorer la précision
-   - Applique une moyenne pondérée pour la mise à jour finale
-   - Nécessite plus de calculs que Euler-Cromer mais offre une meilleure précision
-
-3. **Changements engendrés** :
-   - **Architecture** : Aucun changement nécessaire dans l'architecture du projet
-   - **Interface** : Même interface que les autres intégrateurs
-   - **Performance** : 
-     - Coût de calcul plus élevé (4 évaluations vs 1 pour Euler-Cromer)
-     - Meilleure précision, particulièrement pour des pas de temps plus grands
-   - **Utilisation** : 
-     - Peut être utilisé comme alternative à Euler-Cromer
-     - Particulièrement utile pour des systèmes complexes ou des simulations longues
-
-4. **Avantages de cette intégration** :
-   - **Modularité** : L'ajout de RK4 n'affecte pas le reste du code
-   - **Flexibilité** : Le système peut choisir l'intégrateur approprié selon les besoins
-   - **Précision** : RK4 offre une meilleure précision pour des pas de temps plus grands
-   - **Maintenabilité** : L'implémentation est isolée et bien documentée
-
-5. **Exemple d'impact sur la simulation** :
 ```cpp
-// Avec Euler-Cromer (moins précis mais plus rapide)
-auto systeme1 = Systeme(std::make_shared<IntegrateurEulerCromer>(0.01));
-
-// Avec Runge-Kutta 4 (plus précis mais plus coûteux)
-auto systeme2 = Systeme(std::make_shared<IntegrateurRungeKutta4>(0.01));
+Vecteur GravitationConstante::force(const ObjetPhysique& objet, double) const {
+    return gravitation * objet.getMasse(); // F = m * g
+}
 ```
 
-6. **Recommandations d'utilisation** :
-   - Utiliser RK4 pour :
-     - Des simulations nécessitant une haute précision
-     - Des systèmes complexes avec des forces non-linéaires
-     - Des pas de temps plus grands
-   - Utiliser Euler-Cromer pour :
-     - Des simulations en temps réel
-     - Des systèmes simples
-     - Des pas de temps très petits
+Cette conception respecte le **principe de substitution de Liskov** : `GravitationConstante` peut être utilisée partout où `ChampForces` est attendu.
 
-Cette conception permet donc d'avoir le meilleur des deux mondes : la simplicité et la rapidité d'Euler-Cromer quand c'est suffisant, et la précision de Runge-Kutta 4 quand c'est nécessaire, le tout sans modifier l'architecture du projet.
+## [Question P7.2] Comment les points matériels deviennent-ils des objets physiques ?
 
+**Hiérarchie d'héritage :** `PointMateriel` hérite de `ObjetPhysique` qui hérite de `ObjetMobile`
+
+**Traduction :**
+
+- `ObjetMobile` : paramètres génériques et équation d'évolution
+- `ObjetPhysique` : ajout de masse, champs de forces, contraintes
+- `PointMateriel` : spécialisation pour les particules ponctuelles
+
+Cette architecture respecte le **principe de responsabilité unique** en séparant les préoccupations mathématiques, physiques et géométriques.
+
+## [Question P8.1.1] En termes de POO, quelle est donc la nature de la méthode dessine_sur() ?
+
+**Méthode virtuelle pure** dans la classe abstraite `Dessinable`.
+
+C'est une implémentation du **patron Visiteur** permettant le double dispatch : la méthode appropriée est sélectionnée selon le type concret de l'objet dessinable ET du support de dessin.
+
+## [Question P8.1.2] A quoi faut-il faire attention pour les classes contenant des pointeurs ? Quelle(s) solution(s) est/sont envisageable(s) ?
+
+**Problèmes potentiels :**
+
+- Fuites mémoire
+- Double suppression
+- Pointeurs pendants
+- Copies superficielles
+
+**Solutions adoptées :**
+
+- **Pointeurs intelligents** : `std::shared_ptr`, `std::unique_ptr`
+- **Respect de la règle de cinq** quand nécessaire
+- **Principe RAII** : acquisition des ressources à l'initialisation
+- **Sémantique de déplacement** pour l'efficacité
+
+## [Question P8.2] Comment représentez vous la classe `Systeme` ? Expliquez votre conception (attributs, interface, ...).
+
+**Attributs privés :**
+
+- `std::vector<std::unique_ptr<ObjetPhysique>> objets`
+- `std::vector<std::shared_ptr<ChampForces>> champs`
+- `std::vector<std::shared_ptr<Contrainte>> contraintes`
+- `std::unique_ptr<Integrateur> integrateur`
+- `double temps_actuel`
+
+**Interface publique :**
+
+- **Ajout de composants** : `ajouter_objet()`, `ajouter_champ_forces()`, `ajouter_contrainte()`
+- **Association** : `ajouter_champ_a_objet()`, `ajouter_contrainte_a_objet()`
+- **Simulation** : `evolue(double dt)`
+- **Accès** : getters en lecture seule
+- **Affichage** : `dessine_sur()`, `operator<<`
+
+**Justification de conception :**
+
+- `unique_ptr` pour les objets : propriété exclusive
+- `shared_ptr` pour champs/contraintes : partage entre objets
+- Séparation claire entre simulation et affichage
+- Interface cohérente et sûre
+
+## [Question P12.1] Où cela s'intègre-t-il dans votre projet/conception ? Quels changements cela engendre-t-il (ou pas) ?(Intégration de Runge-Kutta 4)
+
+**Intégration dans l'architecture :** L'`IntegrateurRungeKutta4` s'intègre parfaitement dans l'architecture existante :
+
+- **Hérite de `Integrateur`** : même interface que Euler-Cromer
+- **Polymorphisme** : changement transparent via `set_integrateur()`
+- **Aucun changement architectural** requis
+
+**Utilisation :**
+
+```cpp
+// Euler-Cromer (rapide, moins précis)
+systeme.set_integrateur(std::make_unique<IntegrateurEulerCromer>());
+
+// Runge-Kutta 4 (plus lent, plus précis)
+systeme.set_integrateur(std::make_unique<IntegrateurRungeKutta4>());
+```
+
+**Avantages de cette conception :**
+
+- **Modularité** : ajout sans modification du code existant
+- **Flexibilité** : choix de l'intégrateur selon les besoins
+- **Comparaison** : facilite l'évaluation des différentes méthodes
+- **Extensibilité** : ajout facile d'autres intégrateurs (Newmark, Verlet, etc.)
+
+Cette architecture démontre la puissance de la conception orientée objet : l'ajout de nouvelles fonctionnalités se fait sans perturbation du système existant, respectant parfaitement le principe ouvert/fermé.

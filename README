@@ -1,0 +1,217 @@
+# Simulateur Physique Orienté Objet
+
+## Description du programme
+
+Ce programme est un simulateur physique orienté objet développé en C++ qui permet de modéliser et simuler le comportement de systèmes physiques composés de plusieurs objets soumis à diverses forces et contraintes.
+
+Le simulateur peut gérer :
+- **Points matériels** en mouvement libre ou contraint
+- **Particules chargées** soumises à des champs électromagnétiques
+- **Forces gravitationnelles** (constantes ou newtoniennes)
+- **Forces de frottement fluide**
+- **Intégration numérique** avec différents algorithmes (Euler-Cromer, Runge-Kutta 4)
+
+## Compilation
+
+### Prérequis
+- Compilateur C++ supportant C++17 (g++, clang++)
+- Make (pour utiliser le Makefile)
+- Système Unix/Linux (testé sur les VMs IC-CO-IN-SC de l'EPFL)
+
+### Compilation avec Make
+```bash
+# Compiler tous les exécutables
+make all
+
+# Compiler un exécutable spécifique
+make testVecteur
+make testIntegrateur1
+make testPointMateriel
+make exerciceP9-pomme
+make exerciceP11-magnetique
+
+# Nettoyer les fichiers compilés
+make clean
+```
+
+### Compilation manuelle
+```bash
+# Exemple pour testVecteur
+g++ -std=c++17 -pedantic -Wall -Wextra -Werror -g -c Vecteur.cc
+g++ -std=c++17 -pedantic -Wall -Wextra -Werror -g -c testVecteur.cc
+g++ -o testVecteur testVecteur.o Vecteur.o
+```
+
+## Utilisation
+
+### Programmes de test disponibles
+
+#### 1. `testVecteur`
+Teste les fonctionnalités de la classe Vecteur (opérations vectorielles).
+```bash
+./testVecteur
+```
+
+#### 2. `testIntegrateur1`
+Teste les algorithmes d'intégration numérique avec des points matériels simples.
+```bash
+./testIntegrateur1
+```
+
+#### 3. `testPointMateriel`
+Teste la création et l'affichage de points matériels avec différentes propriétés.
+```bash
+./testPointMateriel
+```
+
+#### 4. `exerciceP9-pomme`
+Simulation d'une pomme en chute libre sous l'attraction gravitationnelle terrestre.
+- Modélise la force gravitationnelle newtonienne F = G*m1*m2/r²
+- Affiche l'évolution de l'altitude en fonction du temps
+```bash
+./exerciceP9-pomme
+```
+
+#### 5. `exerciceP11-magnetique`
+Simulation d'une particule chargée dans un champ électromagnétique.
+- Particule soumise à un champ magnétique et à un frottement fluide
+- Démontre le mouvement cyclotronique avec décroissance
+```bash
+./exerciceP11-magnetique
+```
+
+### Exemples d'exécution
+
+#### Simulation gravitationnelle (pomme)
+```bash
+./exerciceP9-pomme
+```
+Sortie attendue : Évolution de l'altitude d'une pomme lâchée à 10m d'altitude.
+
+#### Simulation électromagnétique
+```bash
+./exerciceP11-magnetique
+```
+Sortie attendue : Trajectoire d'une particule chargée dans un champ magnétique.
+
+## Structure des fichiers principaux
+
+### Classes principales
+- **`Vecteur`** : Vecteur mathématique de dimension quelconque
+- **`ObjetMobile`** : Classe abstraite pour objets avec état évolutif
+- **`ObjetPhysique`** : Objet physique avec masse, forces et contraintes
+- **`PointMateriel`** : Point matériel dans l'espace 3D
+- **`ChargeElectrique`** : Point matériel avec charge électrique
+
+### Champs de forces
+- **`GravitationConstante`** : Gravité uniforme (g constant)
+- **`ChampNewtonien`** : Gravitation newtonienne F = G*m1*m2/r²
+- **`ChampElectromagnetique`** : Force de Lorentz F = q(E + v×B)
+- **`FrottementFluide`** : Frottement proportionnel à la vitesse
+- **`ChampCompose`** : Combinaison de plusieurs champs
+
+### Intégrateurs numériques
+- **`IntegrateurEulerCromer`** : Méthode d'Euler-Cromer (stable, simple)
+- **`IntegrateurRungeKutta4`** : Runge-Kutta d'ordre 4 (précis)
+
+### Contraintes
+- **`Libre`** : Mouvement libre sans contrainte géométrique
+
+### Système et affichage
+- **`Systeme`** : Gestionnaire principal de la simulation
+- **`TextViewer`** : Affichage en mode texte
+
+## Paramètres physiques utilisés
+
+### Constantes universelles
+- **G** (constante gravitationnelle) : 6.67430e-11 m³ kg⁻¹ s⁻²
+- **g** (accélération terrestre) : 9.81 m s⁻²
+
+### Paramètres Terre (exerciceP9-pomme)
+- **Masse de la Terre** : 5.972e24 kg
+- **Rayon terrestre** : 6.371e6 m
+- **Masse de la pomme** : 0.1 kg
+- **Altitude initiale** : 10.0 m
+
+### Paramètres électromagnétiques (exerciceP11-magnetique)
+- **Champ magnétique** : (0, 0, 0.5) T
+- **Charge de la particule** : 2e-6 C
+- **Masse de la particule** : 1.5e-4 kg
+- **Coefficient de frottement** : 1.33e-5 S.I.
+
+## Format de sortie
+
+### Données tabulaires
+```
+t     x           y
+0     0.000000000           0.00000e+00
+0.001 0.000299850           7.49625e-07
+0.002 0.000599550           2.99850e-06
+...
+```
+
+### Informations sur les objets
+```
+Objet n° 1 : Point Matériel :
+1 2 3 # position physique
+0 0.1 0.2 # vitesse physique
+0.1 # masse
+```
+
+## Dépendances et bibliothèques
+
+### Bibliothèques standard C++
+- `<iostream>` : Entrées/sorties
+- `<memory>` : Pointeurs intelligents
+- `<vector>` : Conteneurs dynamiques
+- `<cmath>` : Fonctions mathématiques
+- `<stdexcept>` : Gestion d'exceptions
+- `<iomanip>` : Formatage de sortie
+
+### Fonctionnalités C++ utilisées
+- **C++17** : Fonctionnalités modernes
+- **Pointeurs intelligents** : `std::shared_ptr`, `std::unique_ptr`
+- **Héritage et polymorphisme** : Classes virtuelles
+- **RAII** : Gestion automatique des ressources
+- **Exceptions** : Gestion d'erreurs robuste
+
+## Tests et validation
+
+### Tests unitaires inclus
+1. **Opérations vectorielles** (`testVecteur`)
+2. **Intégration numérique** (`testIntegrateur1`)
+3. **Objets physiques** (`testPointMateriel`)
+
+### Validation physique
+1. **Conservation de l'énergie** : Vérifiée pour les systèmes conservatifs
+2. **Comportement asymptotique** : Testé pour les simulations longues
+3. **Stabilité numérique** : Comparaison entre intégrateurs
+
+## Limitations connues
+
+1. **Pas de détection de collisions** entre objets
+2. **Interface graphique limitée** (mode texte uniquement)
+3. **Contraintes géométriques** limitées (seulement mouvement libre)
+4. **Optimisation** : Priorité donnée à la clarté du code
+
+## Développement futur
+
+### Extensions possibles
+- Interface graphique OpenGL
+- Contraintes géométriques (pendules, surfaces)
+- Détection et résolution de collisions
+- Corps rigides avec rotation
+- Sauvegarde/reprise de simulation
+- Analyse énergétique automatique
+
+### Améliorations techniques
+- Optimisation des performances
+- Parallélisation des calculs
+- Intégrateurs adaptatifs
+- Support de systèmes distribués
+
+## Auteurs et contexte
+
+Ce projet a été développé dans le cadre du cours de "Programmation Orientée Objet" de l'EPFL, semestre de printemps 2025. Il illustre l'application des concepts de POO à la simulation physique numérique.
+
+Le code respecte les standards modernes C++ et privilégie la lisibilité, la maintenabilité et l'extensibilité par rapport aux performances brutes.
